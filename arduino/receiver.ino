@@ -19,6 +19,11 @@ char c1[VW_MAX_MESSAGE_LEN] = "";
 char c2[VW_MAX_MESSAGE_LEN] = "";
 char mb[VW_MAX_MESSAGE_LEN] = "";
 char hu[VW_MAX_MESSAGE_LEN] = "";
+char message[VW_MAX_MESSAGE_LEN] = "";
+
+unsigned long currentMillis = 0;
+unsigned long previousMillis = 0;
+unsigned long interval = 300000; 
 
 void setup()
 {
@@ -52,7 +57,6 @@ void loop()
     {
 	int i = 0; 
         int j = 0;
-        char message[VW_MAX_MESSAGE_LEN] = "";
 	// Message with a good checksum received, dump it.
 	for (i = 0; i < buflen; i++)
 	{
@@ -102,7 +106,25 @@ void loop()
         Serial.println(c2);
         Serial.println(mb);
         Serial.println(hu);
+        // message löschen
+        memset(message, '\0', sizeof(message));
+        // Zeitpunkt für den Timer setzen
+        currentMillis = millis();
     }
+    // Länger als interval Millisec. kein Signal, dann c1, c2, mb und hu leeren
+    if((currentMillis - previousMillis) > interval)
+    {
+      // message löschen
+      memset(message, '\0', sizeof(message));
+      strcpy(c1, message);
+      strcpy(c2, message);
+      strcpy(mb, message);
+      strcpy(hu, message);
+      // Timer setzen
+      previousMillis = currentMillis;
+    }
+
+
     // Ausgabe im Munin-Format erzeugen
     muninEthernet();
 }
