@@ -1,6 +1,6 @@
-#include <Wire.h>
-#include <dht.h>
-#include <VirtualWire.h>
+#include "Wire.h"
+#include "dht.h"
+#include "VirtualWire.h"
 #include <io.h>
 
 dht DHT;
