@@ -109,10 +109,10 @@ void loop()
         // message löschen
         memset(message, '\0', sizeof(message));
         // Zeitpunkt für den Timer setzen
-        currentMillis = millis();
+        previousMillis = millis();
     }
     // Länger als interval Millisec. kein Signal, dann c1, c2, mb und hu leeren
-    if((currentMillis - previousMillis) > interval)
+    if((millis() - previousMillis) > interval)
     {
       // message löschen
       memset(message, '\0', sizeof(message));
@@ -120,8 +120,6 @@ void loop()
       strcpy(c2, message);
       strcpy(mb, message);
       strcpy(hu, message);
-      // Timer setzen
-      previousMillis = currentMillis;
     }
 
 
