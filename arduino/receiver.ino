@@ -23,7 +23,7 @@ char message[VW_MAX_MESSAGE_LEN] = "";
 
 unsigned long currentMillis = 0;
 unsigned long previousMillis = 0;
-unsigned long interval = 300000; 
+unsigned long interval = 600000; 
 
 void setup()
 {
