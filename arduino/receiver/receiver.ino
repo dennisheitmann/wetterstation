@@ -19,6 +19,7 @@ char c1[VW_MAX_MESSAGE_LEN] = "";
 char c2[VW_MAX_MESSAGE_LEN] = "";
 char mb[VW_MAX_MESSAGE_LEN] = "";
 char hu[VW_MAX_MESSAGE_LEN] = "";
+char mV[VW_MAX_MESSAGE_LEN] = "";
 char message[VW_MAX_MESSAGE_LEN] = "";
 
 unsigned long currentMillis = 0;
@@ -96,7 +97,14 @@ void loop()
         }
         if (message[0] == 'm')
         {
-          strcpy(mb, message);
+          if (message[1] == 'V')
+          {
+            strcpy(mV, message);
+          }
+          if (message[1] == 'b')
+          {
+            strcpy(mb, message);
+          }
         }
         if (message[0] == 'h')
         {
@@ -106,6 +114,7 @@ void loop()
         Serial.println(c2);
         Serial.println(mb);
         Serial.println(hu);
+        Serial.println(mV);
         // message löschen
         memset(message, '\0', sizeof(message));
         // Zeitpunkt für den Timer setzen
@@ -120,6 +129,7 @@ void loop()
       strcpy(c2, message);
       strcpy(mb, message);
       strcpy(hu, message);
+      strcpy(mV, message);
     }
 
 
@@ -138,6 +148,8 @@ void muninEthernet() {
       client.print(mb);
       client.print(";");
       client.print(hu);
+      client.print(";");
+      client.print(mV);
       client.println();
       delay(1);
       break;
