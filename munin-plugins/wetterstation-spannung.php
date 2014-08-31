@@ -10,7 +10,7 @@ if ($_SERVER['argv'][1]) {
   }
   if ($_SERVER['argv'][1] == 'config') {
     print "graph_title voltage\n";
-    print "graph_args --alt-y-grid --rigid --lower-limit 0 --upper-limit 100 \n";
+    print "graph_args --alt-y-grid --rigid --lower-limit 4000 --upper-limit 6000 \n";
     print "graph_scale no\n";
     print "graph_vlabel voltage in mV\n";
     print "graph_category sensors\n";
