@@ -14,8 +14,8 @@ if ($_SERVER['argv'][1]) {
     print "graph_scale no\n";
     print "graph_vlabel voltage in mV\n";
     print "graph_category sensors\n";
-    print "graph_info This graphs shows the soltage in mV.\n";
-    print "mVcc.label h[%]\n";
+    print "graph_info This graphs shows the voltage in mV.\n";
+    print "mVcc.label mV\n";
     exit(0);
   }
 }
