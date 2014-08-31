@@ -1,6 +1,6 @@
-#include "Wire.h"
 #include "dht.h"
 #include "VirtualWire.h"
+#include <Wire.h>
 #include <io.h>
 
 dht DHT;
@@ -63,20 +63,16 @@ void loop()
   
   int chk = DHT.read11(DHT11_PIN);
   
-  /*
-  voltage = (float)analogRead(VOLT_PIN) / 204.6;
-  
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
-  strcpy(msgStr, "volt ");
-  dtostrf(voltage, 4, 2, msg_num);
+  strcpy(msgStr, "mVcc ");
+  dtostrf(readVcc(), 4, 0, msg_num);
   sprintf(msg, "%s %s", msgStr, msg_num);
   Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
   lpDelay(DELAYTIME); // low-power delay
-  */
 
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
@@ -133,6 +129,22 @@ int lpDelay(int quarterSeconds) {
   CLKPR = 0x80;    // Tell the AtMega we want to change the system clock
   CLKPR = oldClkPr;    // Restore old system clock prescale
 }
+
+
+// Versorgungspannung messen mit interner Referenz
+long readVcc() {
+  long result;
+  // Read 1.1V reference against AVcc
+  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+  delay(2); // Wait for Vref to settle
+  ADCSRA |= _BV(ADSC); // Convert
+  while (bit_is_set(ADCSRA,ADSC));
+  result = ADCL;
+  result |= ADCH<<8;
+  result = 1126400L / result; // Back-calculate AVcc in mV
+  return result;
+}
+
 
 // Stores all of the bmp085's calibration values into global variables
 // Calibration values are required to calculate temp and pressure
