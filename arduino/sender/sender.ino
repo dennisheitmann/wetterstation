@@ -7,8 +7,9 @@ dht DHT;
 
 #define BMP085_ADDRESS 0x77  // I2C address of BMP085
 #define DHT11_PIN 2
-//#define VOLT_PIN 1
-#define DELAYTIME 120  // 30 sec delay
+#define CURR_PIN 3
+#define CURR_VCC 3
+#define DELAYTIME 100  // 20 sec delay
 
 const unsigned char OSS = 0;  // Oversampling Setting
 
@@ -43,7 +44,7 @@ char msgStr[8];
 
 void setup()
 {
-  Serial.begin(9600);
+  //Serial.begin(9600);
   Wire.begin();
   bmp085Calibration();
   
@@ -51,6 +52,8 @@ void setup()
   vw_set_tx_pin(transmit_pin);
   vw_set_ptt_inverted(true); // Required for DR3100
   vw_setup(4800);  // Bits per sec
+  
+  pinMode(CURR_VCC, OUTPUT);
 }
 
 void loop()
@@ -68,7 +71,7 @@ void loop()
   strcpy(msgStr, "mVcc ");
   dtostrf(readVcc(), 4, 0, msg_num);
   sprintf(msg, "%s %s", msgStr, msg_num);
-  Serial.println(msg);
+  //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
@@ -79,7 +82,7 @@ void loop()
   strcpy(msgStr, "t1_C ");
   dtostrf(temperature, 4, 0, msg_num);
   sprintf(msg, "%s %s", msgStr, msg_num);
-  Serial.println(msg);
+  //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
@@ -90,7 +93,7 @@ void loop()
   strcpy(msgStr, "mbar ");
   dtostrf(pressure, 4, 0, msg_num);
   sprintf(msg, "%s %s", msgStr, msg_num);
-  Serial.println(msg);
+  //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
@@ -101,7 +104,7 @@ void loop()
   strcpy(msgStr, "hum% ");
   dtostrf(DHT.humidity, 4, 0, msg_num);
   sprintf(msg, "%s %s", msgStr, msg_num);
-  Serial.println(msg);
+  //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
@@ -112,7 +115,23 @@ void loop()
   strcpy(msgStr, "t2_C ");
   dtostrf(DHT.temperature, 4, 0, msg_num);
   sprintf(msg, "%s %s", msgStr, msg_num);
-  Serial.println(msg);
+  //Serial.println(msg);
+  vw_send((uint8_t *)msg, strlen(msg));
+  vw_wait_tx();
+  
+  lpDelay(DELAYTIME); // low-power delay
+  
+  digitalWrite(CURR_VCC, HIGH);
+  int current = analogRead(CURR_PIN);
+  digitalWrite(CURR_VCC, LOW);
+  current = map(current, 0, 1023, -5000, 5000);
+    
+  memset(msgStr, '\0', sizeof(msgStr));
+  memset(msg, '\0', sizeof(msg));
+  strcpy(msgStr, "I_mA ");
+  dtostrf(current, 4, 0, msg_num);
+  sprintf(msg, "%s %s", msgStr, msg_num);
+  //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
