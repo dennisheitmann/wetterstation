@@ -1,5 +1,7 @@
 #include "dht.h"
 #include "VirtualWire.h"
+#include "OneWire.h"
+#include "DallasTemperature.h"
 #include <Wire.h>
 #include <io.h>
 
@@ -10,6 +12,12 @@ dht DHT;
 #define CURR_PIN 3
 #define CURR_VCC 3
 #define DELAYTIME 100  // 20 sec delay
+
+#define ONE_WIRE_BUS 4
+// Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+OneWire oneWire(ONE_WIRE_BUS);
+// Pass our oneWire reference to Dallas Temperature.
+DallasTemperature sensors(&oneWire);
 
 const unsigned char OSS = 0;  // Oversampling Setting
 
@@ -54,6 +62,9 @@ void setup()
   vw_setup(4800);  // Bits per sec
   
   pinMode(CURR_VCC, OUTPUT);
+  
+  // Initialisieren der Dallas Temperature library
+  sensors.begin();
 }
 
 void loop()
@@ -122,14 +133,28 @@ void loop()
   lpDelay(DELAYTIME); // low-power delay
   
   digitalWrite(CURR_VCC, HIGH);
+  delay(1000);
   int current = analogRead(CURR_PIN);
   digitalWrite(CURR_VCC, LOW);
-  current = map(current, 0, 1023, -5000, 5000);
+  current = 26 * current - 13512;
     
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
   strcpy(msgStr, "I_mA ");
   dtostrf(current, 4, 0, msg_num);
+  sprintf(msg, "%s %s", msgStr, msg_num);
+  //Serial.println(msg);
+  vw_send((uint8_t *)msg, strlen(msg));
+  vw_wait_tx();
+  
+  lpDelay(DELAYTIME); // low-power delay
+   
+  sensors.requestTemperatures(); // Temp abfragen
+  
+  memset(msgStr, '\0', sizeof(msgStr));
+  memset(msg, '\0', sizeof(msg));
+  strcpy(msgStr, "t3_C ");
+  dtostrf(sensors.getTempCByIndex(0), 4, 0, msg_num);
   sprintf(msg, "%s %s", msgStr, msg_num);
   //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
