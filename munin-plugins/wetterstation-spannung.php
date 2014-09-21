@@ -9,12 +9,12 @@ if ($_SERVER['argv'][1]) {
     exit(0);
   }
   if ($_SERVER['argv'][1] == 'config') {
-    print "graph_title voltage\n";
-    print "graph_args --alt-y-grid --rigid --lower-limit 4000 --upper-limit 6000 \n";
+    print "graph_title Versorgungsspannung\n";
+    print "graph_args --alt-y-grid --rigid --lower-limit 4800 --upper-limit 5200 \n";
     print "graph_scale no\n";
-    print "graph_vlabel voltage in mV\n";
-    print "graph_category sensors\n";
-    print "graph_info This graphs shows the voltage in mV.\n";
+    print "graph_vlabel Spannung in mV\n";
+    print "graph_category wetterstation\n";
+    print "graph_info Dieses Diagramm zeigt die Versorgungsspannung der Wetterstation in mV.\n";
     print "mVcc.label mV\n";
     exit(0);
   }
@@ -25,7 +25,7 @@ if ($fd) {
   fwrite($fd, "\n");
   $zeile = fgets($fd, 1024);
   $zeile = explode(";", $zeile);
-  echo $zeile[4];
+  echo $zeile[5]."\n";
   fclose($fd);
 } else {
   echo "ERROR\n";

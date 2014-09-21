@@ -9,12 +9,12 @@ if ($_SERVER['argv'][1]) {
     exit(0);
   }
   if ($_SERVER['argv'][1] == 'config') {
-    print "graph_title Temperature outside\n";
+    print "graph_title Temperatur\n";
     print "graph_args --alt-y-grid -l 0\n";
     print "graph_scale no\n";
-    print "graph_vlabel temperature in degC\n";
-    print "graph_category sensors\n";
-    print "graph_info This graphs shows the temperature outside.\n";
+    print "graph_vlabel Temperatur in Grad Celsius\n";
+    print "graph_category wetterstation\n";
+    print "graph_info Dieses Diagramm zeigt die Temperatur in Grad Celsius an (Bosch).\n";
     print "t1_C.label t[C]\n";
     exit(0);
   }

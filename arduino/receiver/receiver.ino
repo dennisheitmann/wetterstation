@@ -122,11 +122,10 @@ void loop()
         }
         Serial.println(c1);
         Serial.println(c2);
+        Serial.println(c3);
         Serial.println(mb);
         Serial.println(hu);
         Serial.println(mV);
-        Serial.println(mA);
-        Serial.println(c3);
         // message löschen
         memset(message, '\0', sizeof(message));
         // Zeitpunkt für den Timer setzen
@@ -139,11 +138,10 @@ void loop()
       memset(message, '\0', sizeof(message));
       strcpy(c1, message);
       strcpy(c2, message);
+      strcpy(c3, message);
       strcpy(mb, message);
       strcpy(hu, message);
       strcpy(mV, message);
-      strcpy(mA, message);
-      strcpy(c3, message);
     }
 
 
@@ -159,15 +157,14 @@ void muninEthernet() {
       client.print(";");
       client.print(c2);
       client.print(";");
+      client.print(c3);
+      client.print(";");
       client.print(mb);
       client.print(";");
       client.print(hu);
       client.print(";");
       client.print(mV);
       client.print(";");
-      client.print(mA);
-      client.print(";");
-      client.print(c3);
       client.println();
       delay(1);
       break;
