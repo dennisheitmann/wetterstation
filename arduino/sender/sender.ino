@@ -2,14 +2,17 @@
 #include "VirtualWire.h"
 #include "OneWire.h"
 #include "DallasTemperature.h"
+#include "LowPower.h"
 #include <Wire.h>
 #include <io.h>
+#include <avr/wdt.h>
 
 dht DHT;
 
 #define BMP085_ADDRESS 0x77  // I2C address of BMP085
 #define DHT11_PIN 2
-#define DELAYTIME 100  // 20 sec delay
+
+#define WATCHDOG WDTO_8S
 
 #define ONE_WIRE_BUS 4
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
@@ -61,10 +64,15 @@ void setup()
   
   // Initialisieren der Dallas Temperature library
   sensors.begin();
+  
+  wdt_enable(WATCHDOG);
 }
 
 void loop()
 {
+  /* Watchdog reset */
+  wdt_reset();
+
   temperature = bmp085GetTemperature(bmp085ReadUT());
   temperature = temperature / 10;
   
@@ -82,7 +90,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  lpDelay(DELAYTIME); // low-power delay
+  LpDelay();
 
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
@@ -92,8 +100,8 @@ void loop()
   //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
-
-  lpDelay(DELAYTIME); // low-power delay
+  
+  LpDelay();
 
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
@@ -104,7 +112,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  lpDelay(DELAYTIME); // low-power delay
+  LpDelay();
   
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
@@ -115,7 +123,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  lpDelay(DELAYTIME); // low-power delay
+  LpDelay();
   
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
@@ -126,8 +134,8 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  lpDelay(DELAYTIME); // low-power delay
-   
+  LpDelay();
+  
   sensors.requestTemperatures(); // Temp abfragen
   
   memset(msgStr, '\0', sizeof(msgStr));
@@ -139,20 +147,17 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  lpDelay(DELAYTIME); // low-power delay
+  LpDelay();
 }
 
-
-// Low-Power Delay in Viertelsekunden
-int lpDelay(int quarterSeconds) {
-  int oldClkPr = CLKPR;  // save old system clock prescale
-  CLKPR = 0x80;    // Tell the AtMega we want to change the system clock
-  CLKPR = 0x08;    // 1/256 prescaler = 60KHz for a 16MHz crystal
-  delay(quarterSeconds);  // since the clock is slowed way down, delay(n) now acts like delay(n*256)
-  CLKPR = 0x80;    // Tell the AtMega we want to change the system clock
-  CLKPR = oldClkPr;    // Restore old system clock prescale
+void LpDelay() {
+  wdt_reset();
+  for (int i=0; i>=4; i++) 
+  {
+    LowPower.idle(SLEEP_4S, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF, SPI_OFF, USART0_OFF, TWI_OFF);
+    wdt_reset();
+  }
 }
-
 
 // Versorgungspannung messen mit interner Referenz
 long readVcc() {
