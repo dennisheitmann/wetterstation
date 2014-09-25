@@ -1,13 +1,15 @@
 wetterstation (Arduino)
 =======================
 
-Ardunio Nano mit 433MHz Sender
-- Bosch BMP085 Luftdruck / Temperatursensor
-- DHT11 Luftfeuchte / Temperatursensor
-- OneWire DS18B20 Temperatursensor
+Ardunio Nano (Wetterstation + Sender)
+- [Bosch BMP085 Luftdruck / Temperatursensor](http://www.amazon.de/exec/obidos/ASIN/B00MLVE63I/boxnxxtde-21)
+- [DHT11 Luftfeuchte / Temperatursensor](http://www.amazon.de/exec/obidos/ASIN/B00K8PR16I/boxnxxtde-21)
+- [OneWire DS18B20 Temperatursensor, gekapselt in eine Edelstahlhülse](http://www.amazon.de/exec/obidos/ASIN/B00M0GROK6/boxnxxtde-21)
+- [433 MHz Sender](http://www.amazon.de/exec/obidos/ASIN/B00ATZV5EQ/boxnxxtde-21)
 
-Arduino Uno mit 433MHz Empfänger
-- Ethernet-Shield (feste private IP im Sketch)
+Arduino Uno (Empfänger)
+- [Ethernet-Shield (feste private IP im Sketch)](http://www.amazon.de/exec/obidos/ASIN/B009N826DY/boxnxxtde-21)
+- [433 MHz Empfänger](http://www.amazon.de/exec/obidos/ASIN/B00ATZV5EQ/boxnxxtde-21)
 
 Die Kommunikation zwischen Sender und Empfänger per Funk wird mithilfe der VirtualWire-Bibliothek durchgeführt.
 
