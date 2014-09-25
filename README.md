@@ -1,4 +1,4 @@
-wetterstation (Arduino)
+Wetterstation (Arduino + Munin)
 =======================
 
 Ardunio Nano (Wetterstation + Sender)
