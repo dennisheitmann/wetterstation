@@ -17,8 +17,8 @@ Arduino Uno (Empfänger)
 - [Ethernet-Shield](http://www.amazon.de/exec/obidos/ASIN/B009N826DY/boxnxxtde-21) (feste private IP im Sketch)
 - [433 MHz Empfänger](http://www.amazon.de/exec/obidos/ASIN/B00ATZV5EQ/boxnxxtde-21)
 
-Die Kommunikation zwischen Sender und Empfänger per Funk wird mithilfe der VirtualWire-Bibliothek durchgeführt.
+Die Kommunikation zwischen Sender und Empfänger per Funk wird mithilfe der [VirtualWire-Bibliothek](http://www.airspayce.com/mikem/arduino/VirtualWire/) durchgeführt.
 
-Eine Munin-Node fragt die Sensoren über die php-Scripten via Arduino Uno (Ethernet) ab. Munin zeichnet die Daten auf und visualisiert sie.
+Eine [Munin](http://munin-monitoring.org/)-Node fragt die Sensoren mit PHP-Scripten via Ethernet (Arduino Uno) ab. Ein [Munin](http://munin-monitoring.org/)-Server zeichnet die Daten auf und visualisiert sie.
 
 Die Wetterdaten können über die Android-App ["ChiemseeWetter"](https://play.google.com/store/apps/details?id=de.nxxt.wetter.chiemseewetter) abgerufen werden.
