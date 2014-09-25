@@ -13,4 +13,4 @@ Die Kommunikation zwischen Sender und Empfänger per Funk wird mithilfe der Virt
 
 Eine Munin-Node fragt die Sensoren über die php-Scripten via Arduino Uno (Ethernet) ab. Munin zeichnet die Daten auf und visualisiert sie.
 
-Die Wetterdaten können über die Android-App "ChiemseeWetter|https://play.google.com/store/apps/details?id=de.nxxt.wetter.chiemseewetter" abgerufen werden.
+Die Wetterdaten können über die Android-App ["ChiemseeWetter"](https://play.google.com/store/apps/details?id=de.nxxt.wetter.chiemseewetter) abgerufen werden.
