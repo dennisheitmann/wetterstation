@@ -3,8 +3,7 @@
 #include <SPI.h>
 #include <Ethernet.h>
 
-byte mac[] = { 
-  0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xDD };
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xDD };
 IPAddress ip(192,168,0,97);
 EthernetServer server(23);
 
@@ -16,18 +15,17 @@ const int receive_pin = 8;
 
 const char valueTxt[ ] = ".value";
 
-char c1[VW_MAX_MESSAGE_LEN] = "";
-char c2[VW_MAX_MESSAGE_LEN] = "";
+char t1[VW_MAX_MESSAGE_LEN] = "";
+char t2[VW_MAX_MESSAGE_LEN] = "";
+char t3[VW_MAX_MESSAGE_LEN] = "";
 char mb[VW_MAX_MESSAGE_LEN] = "";
 char hu[VW_MAX_MESSAGE_LEN] = "";
 char mV[VW_MAX_MESSAGE_LEN] = "";
-char mA[VW_MAX_MESSAGE_LEN] = "";
-char c3[VW_MAX_MESSAGE_LEN] = "";
 char message[VW_MAX_MESSAGE_LEN] = "";
 
 unsigned long currentMillis = 0;
 unsigned long previousMillis = 0;
-unsigned long interval = 60000; 
+unsigned long interval = 180000; 
 
 void setup()
 {
@@ -36,8 +34,10 @@ void setup()
 
   // Initialise the IO and ISR
   vw_set_rx_pin(receive_pin);
-  vw_setup(4800);	 // Bits per sec
-  vw_rx_start();       // Start the receiver PLL running
+  // Bits per sec
+  vw_setup(4800);
+  // Start the receiver PLL running
+  vw_rx_start();
 
   lcd.begin(5, 2);
   lcd.print("setup");
@@ -93,18 +93,18 @@ void loop()
     {
       if (message[1] == '1')
       {
-        strcpy(c1, message);
-        Serial.println(c1);
+        strcpy(t1, message);
+        Serial.println(t1);
       }
       if (message[1] == '2')
       {
-        strcpy(c2, message);
-        Serial.println(c2);
+        strcpy(t2, message);
+        Serial.println(t2);
       }
       if (message[1] == '3')
       {
-        strcpy(c3, message);
-        Serial.println(c3);
+        strcpy(t3, message);
+        Serial.println(t3);
       }
     }
     if (message[0] == 'm')
@@ -128,14 +128,14 @@ void loop()
     // Zeitpunkt für den Timer setzen
     previousMillis = millis();
   }
-  // Länger als interval Millisec. kein Signal, dann c1, c2, mb und hu leeren
+  // Länger als interval Millisec. kein Signal, dann die Variablen (Messages) leeren
   if((millis() - previousMillis) > interval)
   {
     // message löschen
     memset(message, '\0', sizeof(message));
-    strcpy(c1, message);
-    strcpy(c2, message);
-    strcpy(c3, message);
+    strcpy(t1, message);
+    strcpy(t2, message);
+    strcpy(t3, message);
     strcpy(mb, message);
     strcpy(hu, message);
     strcpy(mV, message);
@@ -148,11 +148,11 @@ void muninEthernet() {
   EthernetClient client = server.available();
   if (client) {
     while (client.connected()) {
-      client.print(c1);
+      client.print(t1);
       client.print(";");
-      client.print(c2);
+      client.print(t2);
       client.print(";");
-      client.print(c3);
+      client.print(t3);
       client.print(";");
       client.print(mb);
       client.print(";");
