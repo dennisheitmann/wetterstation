@@ -9,13 +9,13 @@ if ($_SERVER['argv'][1]) {
     exit(0);
   }
   if ($_SERVER['argv'][1] == 'config') {
-    print "graph_title Luftfeuchte\n";
-    print "graph_args --alt-y-grid --rigid --lower-limit 0 --upper-limit 100 \n";
+    print "graph_title Temperatur\n";
+    print "graph_args --alt-y-grid -l 0\n";
     print "graph_scale no\n";
-    print "graph_vlabel Luftfeuchte in Prozent\n";
+    print "graph_vlabel Temperatur in Grad Celsius\n";
     print "graph_category wetterstation\n";
-    print "graph_info Dieses Diagramm zeigt die Luftfeuchte in Prozent an (DHT11 Sensor).\n";
-    print "hum%.label h[%]\n";
+    print "graph_info Dieses Diagramm zeigt die Temperatur in Grad Celsius an (Bosch).\n";
+    print "t1_C.label t[C]\n";
     exit(0);
   }
 }
@@ -26,7 +26,7 @@ if ($fd) {
   $zeile = fgets($fd, 1024);
   $zeile = preg_replace('/ +/',' ',$zeile);
   $zeile = explode(";", $zeile);
-  echo $zeile[4]."\n";
+  echo $zeile[0]."\n";
   fclose($fd);
 } else {
   echo "ERROR\n";

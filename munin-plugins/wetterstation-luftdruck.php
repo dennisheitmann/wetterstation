@@ -24,6 +24,7 @@ $fd = fsockopen("tcp://192.168.0.97", 23, $errno, $errstr, 30);
 if ($fd) {
   fwrite($fd, "\n");
   $zeile = fgets($fd, 1024);
+  $zeile = preg_replace('/ +/',' ',$zeile);
   $zeile = explode(";", $zeile);
   echo $zeile[3]."\n";
   fclose($fd);
