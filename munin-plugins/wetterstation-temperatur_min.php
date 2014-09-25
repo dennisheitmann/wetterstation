@@ -27,12 +27,19 @@ if ($fd) {
   $zeile = preg_replace('/ +/',' ',$zeile);
   $zeile = explode(";", $zeile);
   $zeile[0] = explode(" ", $zeile[0]);
-  $zeile[1] = explode(" ", $zeile[1]);
-  $zeile[2] = explode(" ", $zeile[2]);
-  if (is_numeric($zeile[0][1]) && is_numeric($zeile[1][1]) && is_numeric($zeile[2][1])) {
-    $temperatur_min = min($zeile[0][1], $zeile[1][1], $zeile[2][1]);
-    echo "t0_C.value ".$temperatur_min."\n";
+  if (!is_numeric($zeile[0][1])) { 
+    $zeile[0][1] = 99;
   }
+  $zeile[1] = explode(" ", $zeile[1]);
+  if (!is_numeric($zeile[1][1])) { 
+    $zeile[1][1] = 99;
+  }
+  $zeile[2] = explode(" ", $zeile[2]);
+  if (!is_numeric($zeile[2][1])) { 
+    $zeile[2][1] = 99;
+  }
+  $temperatur_min = min($zeile[0][1], $zeile[1][1], $zeile[2][1]);
+  echo "t0_C.value ".$temperatur_min."\n";
   fclose($fd);
 } else {
   echo "ERROR\n";
