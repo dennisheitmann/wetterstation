@@ -81,7 +81,9 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LpDelay();
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  delay(100);
 
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
@@ -92,7 +94,9 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LpDelay();
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  delay(100);
 
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
@@ -103,7 +107,9 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LpDelay();
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  delay(100);
   
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
@@ -114,7 +120,9 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  LpDelay();
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  delay(100);
   
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
@@ -125,7 +133,9 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LpDelay();
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  delay(100);
   
   sensors.requestTemperatures(); // Temp abfragen
   
@@ -138,14 +148,8 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LpDelay();
-}
-
-void LpDelay() {
-  for (int i=0; i>=5; i++) 
-  {
-    LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
-  }
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
 }
 
