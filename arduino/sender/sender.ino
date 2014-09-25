@@ -4,15 +4,11 @@
 #include "DallasTemperature.h"
 #include "LowPower.h"
 #include <Wire.h>
-#include <io.h>
-#include <avr/wdt.h>
 
 dht DHT;
 
 #define BMP085_ADDRESS 0x77  // I2C address of BMP085
 #define DHT11_PIN 2
-
-#define WATCHDOG WDTO_8S
 
 #define ONE_WIRE_BUS 4
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
@@ -64,15 +60,10 @@ void setup()
   
   // Initialisieren der Dallas Temperature library
   sensors.begin();
-  
-  wdt_enable(WATCHDOG);
 }
 
 void loop()
 {
-  /* Watchdog reset */
-  wdt_reset();
-
   temperature = bmp085GetTemperature(bmp085ReadUT());
   temperature = temperature / 10;
   
@@ -151,11 +142,9 @@ void loop()
 }
 
 void LpDelay() {
-  wdt_reset();
-  for (int i=0; i>=4; i++) 
+  for (int i=0; i>=5; i++) 
   {
-    LowPower.powerDown(SLEEP_4S, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF, SPI_OFF, USART0_OFF, TWI_OFF);
-    wdt_reset();
+    LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   }
   delay(100);
 }
