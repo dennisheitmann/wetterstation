@@ -3,7 +3,8 @@
 #include <SPI.h>
 #include <Ethernet.h>
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xDD };
+byte mac[] = { 
+  0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xDD };
 IPAddress ip(192,168,0,97);
 EthernetServer server(23);
 
@@ -30,123 +31,117 @@ unsigned long interval = 600000;
 
 void setup()
 {
-    delay(1000);
-    Serial.begin(9600);
+  delay(1000);
+  Serial.begin(9600);
 
-    // Initialise the IO and ISR
-    vw_set_rx_pin(receive_pin);
-    vw_setup(4800);	 // Bits per sec
-    vw_rx_start();       // Start the receiver PLL running
-    
-    lcd.begin(5, 2);
-    lcd.print("setup");
-    lcd.setCursor(0, 1);
-    lcd.print("setup");
-    delay(500);
-    lcd.clear();
-      
-    delay(50);
-    Ethernet.begin(mac, ip);
-    delay(50);
-    server.begin();
+  // Initialise the IO and ISR
+  vw_set_rx_pin(receive_pin);
+  vw_setup(4800);	 // Bits per sec
+  vw_rx_start();       // Start the receiver PLL running
+
+  lcd.begin(5, 2);
+  lcd.print("setup");
+  lcd.setCursor(0, 1);
+  lcd.print("setup");
+  delay(500);
+  lcd.clear();
+
+  delay(50);
+  Ethernet.begin(mac, ip);
+  delay(50);
+  server.begin();
 }
 
 void loop()
 {
-    uint8_t buf[VW_MAX_MESSAGE_LEN];
-    uint8_t buflen = VW_MAX_MESSAGE_LEN;
+  uint8_t buf[VW_MAX_MESSAGE_LEN];
+  uint8_t buflen = VW_MAX_MESSAGE_LEN;
 
-    if (vw_get_message(buf, &buflen)) // Non-blocking
+  if (vw_get_message(buf, &buflen)) // Non-blocking
+  {
+    // message löschen
+    memset(message, '\0', sizeof(message));
+    int i = 0; 
+    int j = 0;
+    // Message with a good checksum received, dump it.
+    for (i = 0; i < buflen; i++)
     {
-	int i = 0; 
-        int j = 0;
-	// Message with a good checksum received, dump it.
-	for (i = 0; i < buflen; i++)
-	{
-            j = i + strlen(valueTxt);
-            if (i < 4)
-            {
-              message[i] = (char)buf[i];
-            }
-            if (i == 4)
-            {
-              strcat(message, valueTxt);
-              message[j] = (char)buf[i];
-            }
-            if (i > 4)
-            {
-              message[j] = (char)buf[i];
-            }
-            if (i < 6)  
-            {
-              lcd.setCursor(i, 0);
-            } else {
-              lcd.setCursor((i - 5), 1);
-            }
-            lcd.print((char)buf[i]);
-	}
-	//Serial.println();
-        if (message[0] == 't')
-        {
-          if (message[1] == '1')
-          {
-            strcpy(c1, message);
-          }
-          if (message[1] == '2')
-          {
-            strcpy(c2, message);
-          }
-          if (message[1] == '3')
-          {
-            strcpy(c3, message);
-          }
-        }
-        if (message[0] == 'm')
-        {
-          if (message[1] == 'V')
-          {
-            strcpy(mV, message);
-          }
-          if (message[1] == 'b')
-          {
-            strcpy(mb, message);
-          }
-        }
-        if (message[0] == 'h')
-        {
-          strcpy(hu, message);
-        }
-        if (message[0] == 'I')
-        {
-          strcpy(mA, message);
-        }
+      j = i + strlen(valueTxt);
+      if (i < 4)
+      {
+        message[i] = (char)buf[i];
+      }
+      if (i == 4)
+      {
+        strcat(message, valueTxt);
+        message[j] = (char)buf[i];
+      }
+      if (i > 4)
+      {
+        message[j] = (char)buf[i];
+      }
+      if (i < 6)  
+      {
+        lcd.setCursor(i, 0);
+      } 
+      else {
+        lcd.setCursor((i - 5), 1);
+      }
+      lcd.print((char)buf[i]);
+    }
+    if (message[0] == 't')
+    {
+      if (message[1] == '1')
+      {
+        strcpy(c1, message);
         Serial.println(c1);
+      }
+      if (message[1] == '2')
+      {
+        strcpy(c2, message);
         Serial.println(c2);
+      }
+      if (message[1] == '3')
+      {
+        strcpy(c3, message);
         Serial.println(c3);
-        Serial.println(mb);
-        Serial.println(hu);
-        Serial.println(mV);
-        // message löschen
-        memset(message, '\0', sizeof(message));
-        // Zeitpunkt für den Timer setzen
-        previousMillis = millis();
+      }
     }
-    // Länger als interval Millisec. kein Signal, dann c1, c2, mb und hu leeren
-    if((millis() - previousMillis) > interval)
+    if (message[0] == 'm')
     {
-      // message löschen
-      memset(message, '\0', sizeof(message));
-      strcpy(c1, message);
-      strcpy(c2, message);
-      strcpy(c3, message);
-      strcpy(mb, message);
-      strcpy(hu, message);
-      strcpy(mV, message);
+      if (message[1] == 'V')
+      {
+        strcpy(mV, message);
+        Serial.println(mV);
+      }
+      if (message[1] == 'b')
+      {
+        strcpy(mb, message);
+        Serial.println(mb);
+      }
     }
-
-
-    // Ausgabe im Munin-Format erzeugen
-    muninEthernet();
+    if (message[0] == 'h')
+    {
+      strcpy(hu, message);
+      Serial.println(hu);
+    }
+    // Zeitpunkt für den Timer setzen
+    previousMillis = millis();
+  }
+  // Länger als interval Millisec. kein Signal, dann c1, c2, mb und hu leeren
+  if((millis() - previousMillis) > interval)
+  {
+    // message löschen
+    memset(message, '\0', sizeof(message));
+    strcpy(c1, message);
+    strcpy(c2, message);
+    strcpy(c3, message);
+    strcpy(mb, message);
+    strcpy(hu, message);
+    strcpy(mV, message);
+  }
+  // Ausgabe im Munin-Format erzeugen
+  muninEthernet();
 }
 
 void muninEthernet() {
@@ -165,6 +160,11 @@ void muninEthernet() {
       client.print(";");
       client.print(mV);
       client.print(";");
+      client.print("Last Message: ");
+      client.print(message);
+      client.print(" @ ");
+      client.print(previousMillis);
+      client.print(";");
       client.println();
       delay(1);
       break;
@@ -172,3 +172,4 @@ void muninEthernet() {
   }
   client.stop();
 }
+
