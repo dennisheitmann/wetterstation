@@ -72,6 +72,44 @@ void loop()
   
   int chk = DHT.read11(DHT11_PIN);
   
+  float batvcc = analogRead(A0)*0.0276;
+  float solvcc = analogRead(A2)*0.0276;
+  
+  if (batvcc > 14.2) {
+    digitalWrite(11, LOW);
+    //Serial.println("Voll");
+  }
+  if ((batvcc < 14.0) && (solvcc > batvcc)) {
+    digitalWrite(11, HIGH);
+    //Serial.println("Laden");
+  }
+  
+  memset(msgStr, '\0', sizeof(msgStr));
+  memset(msg, '\0', sizeof(msg));
+  strcpy(msgStr, "SVcc ");
+  dtostrf(solvcc, 4, 1, msg_num);
+  sprintf(msg, "%s %s", msgStr, msg_num);
+  //Serial.println(msg);
+  vw_send((uint8_t *)msg, strlen(msg));
+  vw_wait_tx();
+  
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  delay(100);
+
+  memset(msgStr, '\0', sizeof(msgStr));
+  memset(msg, '\0', sizeof(msg));
+  strcpy(msgStr, "BVcc ");
+  dtostrf(batvcc, 4, 1, msg_num);
+  sprintf(msg, "%s %s", msgStr, msg_num);
+  //Serial.println(msg);
+  vw_send((uint8_t *)msg, strlen(msg));
+  vw_wait_tx();
+  
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  delay(100);
+  
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
   strcpy(msgStr, "mVcc ");
