@@ -12,7 +12,7 @@ if ($_SERVER['argv'][1]) {
     print "graph_title Akkuspannung\n";
     print "graph_args --alt-y-grid --rigid --lower-limit 10 --upper-limit 15 \n";
     print "graph_scale no\n";
-    print "graph_vlabel Spannung in mV\n";
+    print "graph_vlabel Spannung in V\n";
     print "graph_category wetterstation\n";
     print "graph_info Dieses Diagramm zeigt die Akkuspannung der Wetterstation in V.\n";
     print "BVcc.label V\n";
