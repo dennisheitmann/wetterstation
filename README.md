@@ -8,8 +8,7 @@ Arduino Nano (Wetterstation + Sender)
 - [433 MHz Sender](http://www.amazon.de/exec/obidos/ASIN/B00ATZV5EQ/boxnxxtde-21)
 - Spannungsversorgung
   - [10 W Solarpanel](http://www.amazon.de/exec/obidos/ASIN/B007HAZY8Y/boxnxxtde-21) 
-  - [6 V 4,2Ah Akku](http://www.amazon.de/exec/obidos/ASIN/B002E4WJJU/boxnxxtde-21)
-  - [LM2596 Schaltreglermodul](http://www.amazon.de/exec/obidos/ASIN/B009P04YTO/boxnxxtde-21)
+  - [15 V 7Ah Akku](http://www.amazon.de/exec/obidos/ASIN/B00F4A0NJO/boxnxxtde-21)
 
 Die Wetterstation befindet sich in einem selbstgebauten Wetterhütte (entfernt angelehnt an die Bauanleitung für eine Wetterhütte des  [DWD](http://www.dwd.de/bvbw/appmanager/bvbw/dwdwwwDesktop?_nfpb=true&_pageLabel=_dwdwww_spezielle_nutzer_hobbymeteorologen_meldungen&_state=maximized&_windowLabel=T19604631211153463022325)).
 
