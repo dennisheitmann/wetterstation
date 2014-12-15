@@ -81,6 +81,9 @@ void loop()
   
   int chk = DHT.read11(DHT11_PIN);
   
+  // Solarzelle von Akku trennen vor Messungen
+  digitalWrite(relaisPin, LOW);
+  
   float batvcc = analogRead(batPin)*0.0276;
   float solvcc = analogRead(solPin)*0.0276;
   
