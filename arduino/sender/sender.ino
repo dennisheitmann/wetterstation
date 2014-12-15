@@ -102,7 +102,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
 
@@ -115,7 +115,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
   
@@ -128,7 +128,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
 
@@ -141,7 +141,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
 
@@ -154,7 +154,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
   
@@ -167,7 +167,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
   
@@ -180,7 +180,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
   
@@ -195,7 +195,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+  LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
 }
