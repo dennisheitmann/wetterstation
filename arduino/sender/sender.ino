@@ -47,6 +47,12 @@ char msg_num[8];
 char msg[8];
 char msgStr[8];
 
+// D11
+const int relaisPin = 11;
+// A0 und A2
+const int batPin = 0;
+const int solPin = 2;
+
 void setup()
 {
   //Serial.begin(9600);
@@ -60,6 +66,9 @@ void setup()
   
   // Initialisieren der Dallas Temperature library
   sensors.begin();
+
+  // Relais-Output-Pin setzen
+  pinMode(relaisPin, OUTPUT);
 }
 
 void loop()
@@ -72,15 +81,15 @@ void loop()
   
   int chk = DHT.read11(DHT11_PIN);
   
-  float batvcc = analogRead(A0)*0.0276;
-  float solvcc = analogRead(A2)*0.0276;
+  float batvcc = analogRead(batPin)*0.0276;
+  float solvcc = analogRead(solPin)*0.0276;
   
   if (batvcc > 14.2) {
-    digitalWrite(11, LOW);
+    digitalWrite(relaisPin, LOW);
     //Serial.println("Voll");
   }
   if ((batvcc < 14.0) && (solvcc > batvcc)) {
-    digitalWrite(11, HIGH);
+    digitalWrite(relaisPin, HIGH);
     //Serial.println("Laden");
   }
   
