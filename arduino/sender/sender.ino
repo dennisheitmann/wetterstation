@@ -83,6 +83,7 @@ void loop()
   
   // Solarzelle von Akku trennen vor Messungen
   digitalWrite(relaisPin, LOW);
+  delay(100);
   
   float batvcc = analogRead(batPin)*0.0276;
   float solvcc = analogRead(solPin)*0.0276;
