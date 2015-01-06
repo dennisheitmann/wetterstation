@@ -58,12 +58,12 @@ void setup()
   //Serial.begin(9600);
   Wire.begin();
   bmp085Calibration();
-  
+
   // Initialise the IO and ISR
   vw_set_tx_pin(transmit_pin);
   vw_set_ptt_inverted(true); // Required for DR3100
   vw_setup(4800);  // Bits per sec
-  
+
   // Initialisieren der Dallas Temperature library
   sensors.begin();
 
@@ -73,29 +73,41 @@ void setup()
 
 void loop()
 {
+  // BMP Daten einlesen
   temperature = bmp085GetTemperature(bmp085ReadUT());
   temperature = temperature / 10;
-  
+
   pressure = bmp085GetPressure(bmp085ReadUP());
   pressure = pressure / 100 + altitudecorrection;
-  
+
+  // DHT Daten einlesen
   int chk = DHT.read11(DHT11_PIN);
   
-  // Solarzelle von Akku trennen vor Messungen
+  // OneWire Temperatur abfragen
+  sensors.requestTemperatures();
+
+  // Leerlaufspannung der Solarzelle mit nicht angeschlossenem Akku messen
   digitalWrite(relaisPin, HIGH);
-  delay(100);
-  
-  float batvcc = analogRead(batPin)*0.0276;
+  LowPower.powerDown(SLEEP_120MS, ADC_OFF, BOD_ON);
+  delay(80);
   float solvcc = analogRead(solPin)*0.0276;
+
+  // Messung Batteriespannung mit angeschlossener Solarzelle starten
+  digitalWrite(relaisPin, LOW);
+  LowPower.powerDown(SLEEP_120MS, ADC_OFF, BOD_ON);
+  delay(80);
+  float batvcc = analogRead(batPin)*0.0276;
   
-  if (batvcc > 14.2) {
+  // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
+  if (batvcc > 14.0) {
     digitalWrite(relaisPin, HIGH);
-    //Serial.println("Voll");
+    // Serial.println("Voll");
   } else {
     digitalWrite(relaisPin, LOW);
-    //Serial.println("Laden");
+    // Serial.println("Laden");
   }
-  
+
+  // Solarzellenleerlaufspannung senden
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
   strcpy(msgStr, "SVcc ");
@@ -104,11 +116,12 @@ void loop()
   //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
-  
+
   LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
 
+  // Batteriespannung mit angeschlossener Solarzelle senden
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
   strcpy(msgStr, "BVcc ");
@@ -117,11 +130,12 @@ void loop()
   //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
-  
+
   LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
-  
+
+  // Versorgungsspannung senden
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
   strcpy(msgStr, "mVcc ");
@@ -130,11 +144,12 @@ void loop()
   //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
-  
+
   LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
 
+  // BMP Temperatur senden
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
   strcpy(msgStr, "t1_C ");
@@ -143,11 +158,12 @@ void loop()
   //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
-  
+
   LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
 
+  // BMP Druck senden
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
   strcpy(msgStr, "mbar ");
@@ -156,11 +172,12 @@ void loop()
   //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
-  
+
   LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
-  
+
+  // DHT Feuchtigkeitswert senden
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
   strcpy(msgStr, "hum% ");
@@ -173,7 +190,8 @@ void loop()
   LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
-  
+
+  // DHT Temperatur senden
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
   strcpy(msgStr, "t2_C ");
@@ -182,13 +200,12 @@ void loop()
   //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
-  
+
   LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
-  
-  sensors.requestTemperatures(); // Temp abfragen
-  
+
+  // OneWire Temperatur senden
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
   strcpy(msgStr, "t3_C ");
@@ -197,7 +214,7 @@ void loop()
   //Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
-  
+
   LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   delay(100);
@@ -241,7 +258,7 @@ void bmp085Calibration()
 short bmp085GetTemperature(unsigned int ut)
 {
   long x1, x2;
-  
+
   x1 = (((long)ut - (long)ac6)*(long)ac5) >> 15;
   x2 = ((long)mc << 11)/(x1 + md);
   b5 = x1 + x2;
@@ -257,31 +274,31 @@ long bmp085GetPressure(unsigned long up)
 {
   long x1, x2, x3, b3, b6, p;
   unsigned long b4, b7;
-  
+
   b6 = b5 - 4000;
   // Calculate B3
   x1 = (b2 * (b6 * b6)>>12)>>11;
   x2 = (ac2 * b6)>>11;
   x3 = x1 + x2;
   b3 = (((((long)ac1)*4 + x3)<<OSS) + 2)>>2;
-  
+
   // Calculate B4
   x1 = (ac3 * b6)>>13;
   x2 = (b1 * ((b6 * b6)>>12))>>16;
   x3 = ((x1 + x2) + 2)>>2;
   b4 = (ac4 * (unsigned long)(x3 + 32768))>>15;
-  
+
   b7 = ((unsigned long)(up - b3) * (50000>>OSS));
   if (b7 < 0x80000000)
     p = (b7<<1)/b4;
   else
     p = (b7/b4)<<1;
-    
+
   x1 = (p>>8) * (p>>8);
   x1 = (x1 * 3038)>>16;
   x2 = (-7357 * p)>>16;
   p += (x1 + x2 + 3791)>>4;
-  
+
   return p;
 }
 
@@ -289,15 +306,15 @@ long bmp085GetPressure(unsigned long up)
 char bmp085Read(unsigned char address)
 {
   unsigned char data;
-  
+
   Wire.beginTransmission(BMP085_ADDRESS);
   Wire.write(address);
   Wire.endTransmission();
-  
+
   Wire.requestFrom(BMP085_ADDRESS, 1);
   while(!Wire.available())
     ;
-    
+
   return Wire.read();
 }
 
@@ -307,17 +324,17 @@ char bmp085Read(unsigned char address)
 int bmp085ReadInt(unsigned char address)
 {
   unsigned char msb, lsb;
-  
+
   Wire.beginTransmission(BMP085_ADDRESS);
   Wire.write(address);
   Wire.endTransmission();
-  
+
   Wire.requestFrom(BMP085_ADDRESS, 2);
   while(Wire.available()<2)
     ;
   msb = Wire.read();
   lsb = Wire.read();
-  
+
   return (int) msb<<8 | lsb;
 }
 
@@ -325,17 +342,17 @@ int bmp085ReadInt(unsigned char address)
 unsigned int bmp085ReadUT()
 {
   unsigned int ut;
-  
+
   // Write 0x2E into Register 0xF4
   // This requests a temperature reading
   Wire.beginTransmission(BMP085_ADDRESS);
   Wire.write(0xF4);
   Wire.write(0x2E);
   Wire.endTransmission();
-  
+
   // Wait at least 4.5ms
   delay(10);
-  
+
   // Read two bytes from registers 0xF6 and 0xF7
   ut = bmp085ReadInt(0xF6);
   return ut;
@@ -346,31 +363,33 @@ unsigned long bmp085ReadUP()
 {
   unsigned char msb, lsb, xlsb;
   unsigned long up = 0;
-  
+
   // Write 0x34+(OSS<<6) into register 0xF4
   // Request a pressure reading w/ oversampling setting
   Wire.beginTransmission(BMP085_ADDRESS);
   Wire.write(0xF4);
   Wire.write(0x34 + (OSS<<6));
   Wire.endTransmission();
-  
+
   // Wait for conversion, delay time dependent on OSS
   delay(4 + (3<<OSS));
-  
+
   // Read register 0xF6 (MSB), 0xF7 (LSB), and 0xF8 (XLSB)
   Wire.beginTransmission(BMP085_ADDRESS);
   Wire.write(0xF6);
   Wire.endTransmission();
   Wire.requestFrom(BMP085_ADDRESS, 3);
-  
+
   // Wait for data to become available
   while(Wire.available() < 3)
     ;
   msb = Wire.read();
   lsb = Wire.read();
   xlsb = Wire.read();
-  
+
   up = (((unsigned long) msb << 16) | ((unsigned long) lsb << 8) | (unsigned long) xlsb) >> (8-OSS);
-  
+
   return up;
 }
+
+
