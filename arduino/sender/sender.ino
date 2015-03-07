@@ -99,7 +99,7 @@ void loop()
   float batvcc = analogRead(batPin)*0.0276;
   
   // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
-  if (batvcc > 14.3) {
+  if (batvcc > 14.0) {
     digitalWrite(relaisPin, HIGH);
     // Serial.println("Voll");
   } else {
