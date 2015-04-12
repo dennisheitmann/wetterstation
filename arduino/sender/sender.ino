@@ -69,6 +69,7 @@ void setup()
 
   // Relais-Output-Pin setzen
   pinMode(relaisPin, OUTPUT);
+  randomSeed(analogRead(3));
 }
 
 void loop()
@@ -211,13 +212,14 @@ void loop()
   strcpy(msgStr, "t3_C ");
   dtostrf(sensors.getTempCByIndex(0), 4, 0, msg_num);
   sprintf(msg, "%s %s", msgStr, msg_num);
-  //Serial.println(msg);
+  // Serial.println(msg);
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
   LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
-  delay(100);
+  // Sendeintervall leicht versetzen, um gleichzeitige Kanalbelegung zu verhindern
+  delay(random(100, 1900));
 }
 
 // Versorgungspannung messen mit interner Referenz
