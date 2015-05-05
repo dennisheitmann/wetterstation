@@ -37,7 +37,7 @@ void setup()
   // Initialise the IO and ISR
   vw_set_rx_pin(receive_pin);
   // Bits per sec
-  vw_setup(4800);
+  vw_setup(1200);
   // Start the receiver PLL running
   vw_rx_start();
 

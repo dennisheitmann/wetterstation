@@ -1,63 +1,41 @@
-//
-//    FILE: dht.h
-//  AUTHOR: Rob Tillaart
-// VERSION: 0.1.13
-// PURPOSE: DHT Temperature & Humidity Sensor library for Arduino
-//     URL: http://arduino.cc/playground/Main/DHTLib
-//
-// HISTORY:
-// see dht.cpp file
-//
-
-#ifndef dht_h
-#define dht_h
-
-#if ARDUINO < 100
-#include <WProgram.h>
+#ifndef DHT_H
+#define DHT_H
+#if ARDUINO >= 100
+ #include "Arduino.h"
 #else
-#include <Arduino.h>
+ #include "WProgram.h"
 #endif
 
-#define DHT_LIB_VERSION "0.1.13"
+/* DHT library 
 
-#define DHTLIB_OK                0
-#define DHTLIB_ERROR_CHECKSUM   -1
-#define DHTLIB_ERROR_TIMEOUT    -2
-#define DHTLIB_INVALID_VALUE    -999
+MIT license
+written by Adafruit Industries
+*/
 
-#define DHTLIB_DHT11_WAKEUP     18
-#define DHTLIB_DHT_WAKEUP       1
+// how many timing transitions we need to keep track of. 2 * number bits + extra
+#define MAXTIMINGS 85
 
-// max timeout is 100usec.
-// For a 16Mhz proc that is max 1600 clock cycles
-// loops using TIMEOUT use at least 4 clock cycli
-// so 100 us takes max 400 loops
-// so by dividing F_CPU by 40000 we "fail" as fast as possible
-#define DHTLIB_TIMEOUT (F_CPU/40000)
+#define DHT11 11
+#define DHT22 22
+#define DHT21 21
+#define AM2301 21
 
-class dht
-{
-public:
-    // return values:
-    // DHTLIB_OK
-    // DHTLIB_ERROR_CHECKSUM
-    // DHTLIB_ERROR_TIMEOUT
-    int read11(uint8_t pin);
-    int read(uint8_t pin);
+class DHT {
+ private:
+  uint8_t data[6];
+  uint8_t _pin, _type, _count;
+  unsigned long _lastreadtime;
+  boolean firstreading;
 
-    inline int read21(uint8_t pin) { return read(pin); };
-    inline int read22(uint8_t pin) { return read(pin); };
-    inline int read33(uint8_t pin) { return read(pin); };
-    inline int read44(uint8_t pin) { return read(pin); };
+ public:
+  DHT(uint8_t pin, uint8_t type, uint8_t count=6);
+  void begin(void);
+  float readTemperature(bool S=false);
+  float convertCtoF(float);
+  float convertFtoC(float);
+  float computeHeatIndex(float tempFahrenheit, float percentHumidity);
+  float readHumidity(void);
+  boolean read(void);
 
-    double humidity;
-    double temperature;
-
-private:
-    uint8_t bits[5];  // buffer to receive data
-    int _readSensor(uint8_t pin, uint8_t wakeupDelay);
 };
 #endif
-//
-// END OF FILE
-//

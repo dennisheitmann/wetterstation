@@ -1,169 +1,179 @@
-//
-//    FILE: dht.cpp
-//  AUTHOR: Rob Tillaart
-// VERSION: 0.1.13
-// PURPOSE: DHT Temperature & Humidity Sensor library for Arduino
-//     URL: http://arduino.cc/playground/Main/DHTLib
-//
-// HISTORY:
-// 0.1.13 fix negative temperature
-// 0.1.12 support DHT33 and DHT44 initial version
-// 0.1.11 renamed DHTLIB_TIMEOUT
-// 0.1.10 optimized faster WAKEUP + TIMEOUT
-// 0.1.09 optimize size: timeout check + use of mask
-// 0.1.08 added formula for timeout based upon clockspeed
-// 0.1.07 added support for DHT21
-// 0.1.06 minimize footprint (2012-12-27)
-// 0.1.05 fixed negative temperature bug (thanks to Roseman)
-// 0.1.04 improved readability of code using DHTLIB_OK in code
-// 0.1.03 added error values for temp and humidity when read failed
-// 0.1.02 added error codes
-// 0.1.01 added support for Arduino 1.0, fixed typos (31/12/2011)
-// 0.1.0 by Rob Tillaart (01/04/2011)
-//
-// inspired by DHT11 library
-//
-// Released to the public domain
-//
+/* DHT library 
 
-#include "dht.h"
+MIT license
+written by Adafruit Industries
+*/
 
-/////////////////////////////////////////////////////
-//
-// PUBLIC
-//
+#include "DHT.h"
 
-// return values:
-// DHTLIB_OK
-// DHTLIB_ERROR_CHECKSUM
-// DHTLIB_ERROR_TIMEOUT
-int dht::read11(uint8_t pin)
-{
-    // READ VALUES
-    int rv = _readSensor(pin, DHTLIB_DHT11_WAKEUP);
-    if (rv != DHTLIB_OK)
-    {
-        humidity    = DHTLIB_INVALID_VALUE; // invalid value, or is NaN prefered?
-        temperature = DHTLIB_INVALID_VALUE; // invalid value
-        return rv;
+DHT::DHT(uint8_t pin, uint8_t type, uint8_t count) {
+  _pin = pin;
+  _type = type;
+  _count = count;
+  firstreading = true;
+}
+
+void DHT::begin(void) {
+  // set up the pins!
+  pinMode(_pin, INPUT);
+  digitalWrite(_pin, HIGH);
+  _lastreadtime = 0;
+}
+
+//boolean S == Scale.  True == Farenheit; False == Celcius
+float DHT::readTemperature(bool S) {
+  float f;
+
+  if (read()) {
+    switch (_type) {
+    case DHT11:
+      f = data[2];
+      if(S)
+      	f = convertCtoF(f);
+      	
+      return f;
+    case DHT22:
+    case DHT21:
+      f = data[2] & 0x7F;
+      f *= 256;
+      f += data[3];
+      f /= 10;
+      if (data[2] & 0x80)
+	f *= -1;
+      if(S)
+	f = convertCtoF(f);
+
+      return f;
     }
+  }
+  return NAN;
+}
 
-    // CONVERT AND STORE
-    humidity    = bits[0];  // bits[1] == 0;
-    temperature = bits[2];  // bits[3] == 0;
+float DHT::convertCtoF(float c) {
+	return c * 9 / 5 + 32;
+}
 
-    // TEST CHECKSUM
-    // bits[1] && bits[3] both 0
-    uint8_t sum = bits[0] + bits[2];
-    if (bits[4] != sum) return DHTLIB_ERROR_CHECKSUM;
+float DHT::convertFtoC(float f) {
+  return (f - 32) * 5 / 9; 
+}
 
-    return DHTLIB_OK;
+float DHT::readHumidity(void) {
+  float f;
+  if (read()) {
+    switch (_type) {
+    case DHT11:
+      f = data[0];
+      return f;
+    case DHT22:
+    case DHT21:
+      f = data[0];
+      f *= 256;
+      f += data[1];
+      f /= 10;
+      return f;
+    }
+  }
+  return NAN;
+}
+
+float DHT::computeHeatIndex(float tempFahrenheit, float percentHumidity) {
+  // Adapted from equation at: https://github.com/adafruit/DHT-sensor-library/issues/9 and
+  // Wikipedia: http://en.wikipedia.org/wiki/Heat_index
+  return -42.379 + 
+           2.04901523 * tempFahrenheit + 
+          10.14333127 * percentHumidity +
+          -0.22475541 * tempFahrenheit*percentHumidity +
+          -0.00683783 * pow(tempFahrenheit, 2) +
+          -0.05481717 * pow(percentHumidity, 2) + 
+           0.00122874 * pow(tempFahrenheit, 2) * percentHumidity + 
+           0.00085282 * tempFahrenheit*pow(percentHumidity, 2) +
+          -0.00000199 * pow(tempFahrenheit, 2) * pow(percentHumidity, 2);
 }
 
 
-// return values:
-// DHTLIB_OK
-// DHTLIB_ERROR_CHECKSUM
-// DHTLIB_ERROR_TIMEOUT
-int dht::read(uint8_t pin)
-{
-    // READ VALUES
-    int rv = _readSensor(pin, DHTLIB_DHT_WAKEUP);
-    if (rv != DHTLIB_OK)
-    {
-        humidity    = DHTLIB_INVALID_VALUE;  // invalid value, or is NaN prefered?
-        temperature = DHTLIB_INVALID_VALUE;  // invalid value
-        return rv; // propagate error value
+boolean DHT::read(void) {
+  uint8_t laststate = HIGH;
+  uint8_t counter = 0;
+  uint8_t j = 0, i;
+  unsigned long currenttime;
+
+  // Check if sensor was read less than two seconds ago and return early
+  // to use last reading.
+  currenttime = millis();
+  if (currenttime < _lastreadtime) {
+    // ie there was a rollover
+    _lastreadtime = 0;
+  }
+  if (!firstreading && ((currenttime - _lastreadtime) < 2000)) {
+    return true; // return last correct measurement
+    //delay(2000 - (currenttime - _lastreadtime));
+  }
+  firstreading = false;
+  /*
+    Serial.print("Currtime: "); Serial.print(currenttime);
+    Serial.print(" Lasttime: "); Serial.print(_lastreadtime);
+  */
+  _lastreadtime = millis();
+
+  data[0] = data[1] = data[2] = data[3] = data[4] = 0;
+  
+  // pull the pin high and wait 250 milliseconds
+  digitalWrite(_pin, HIGH);
+  delay(250);
+
+  // now pull it low for ~20 milliseconds
+  pinMode(_pin, OUTPUT);
+  digitalWrite(_pin, LOW);
+  delay(20);
+  noInterrupts();
+  digitalWrite(_pin, HIGH);
+  delayMicroseconds(40);
+  pinMode(_pin, INPUT);
+
+  // read in timings
+  for ( i=0; i< MAXTIMINGS; i++) {
+    counter = 0;
+    while (digitalRead(_pin) == laststate) {
+      counter++;
+      delayMicroseconds(1);
+      if (counter == 255) {
+        break;
+      }
+    }
+    laststate = digitalRead(_pin);
+
+    if (counter == 255) break;
+
+    // ignore first 3 transitions
+    if ((i >= 4) && (i%2 == 0)) {
+      // shove each bit into the storage bytes
+      data[j/8] <<= 1;
+      if (counter > _count)
+        data[j/8] |= 1;
+      j++;
     }
 
-    // CONVERT AND STORE
-    humidity = word(bits[0], bits[1]) * 0.1;
-    temperature = word(bits[2] & 0x7F, bits[3]) * 0.1;
-    if (bits[2] & 0x80)  // negative temperature
-    {
-        temperature = -temperature;
-    }
+  }
 
-    // TEST CHECKSUM
-    uint8_t sum = bits[0] + bits[1] + bits[2] + bits[3];
-    if (bits[4] != sum)
-    {
-        return DHTLIB_ERROR_CHECKSUM;
-    }
-    return DHTLIB_OK;
+  interrupts();
+  
+  /*
+  Serial.println(j, DEC);
+  Serial.print(data[0], HEX); Serial.print(", ");
+  Serial.print(data[1], HEX); Serial.print(", ");
+  Serial.print(data[2], HEX); Serial.print(", ");
+  Serial.print(data[3], HEX); Serial.print(", ");
+  Serial.print(data[4], HEX); Serial.print(" =? ");
+  Serial.println(data[0] + data[1] + data[2] + data[3], HEX);
+  */
+
+  // check we read 40 bits and that the checksum matches
+  if ((j >= 40) && 
+      (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF)) ) {
+    return true;
+  }
+  
+
+  return false;
+
 }
-
-/////////////////////////////////////////////////////
-//
-// PRIVATE
-//
-
-// return values:
-// DHTLIB_OK
-// DHTLIB_ERROR_TIMEOUT
-int dht::_readSensor(uint8_t pin, uint8_t wakeupDelay)
-{
-    // INIT BUFFERVAR TO RECEIVE DATA
-    uint8_t mask = 128;
-    uint8_t idx = 0;
-
-    // EMPTY BUFFER
-    for (uint8_t i = 0; i < 5; i++) bits[i] = 0;
-
-    // REQUEST SAMPLE
-    pinMode(pin, OUTPUT);
-    digitalWrite(pin, LOW);
-    delay(wakeupDelay);
-    digitalWrite(pin, HIGH);
-    delayMicroseconds(40);
-    pinMode(pin, INPUT);
-
-    // GET ACKNOWLEDGE or TIMEOUT
-    uint16_t loopCnt = DHTLIB_TIMEOUT;
-    while(digitalRead(pin) == LOW)
-    {
-        if (--loopCnt == 0) return DHTLIB_ERROR_TIMEOUT;
-    }
-
-    loopCnt = DHTLIB_TIMEOUT;
-    while(digitalRead(pin) == HIGH)
-    {
-        if (--loopCnt == 0) return DHTLIB_ERROR_TIMEOUT;
-    }
-
-    // READ THE OUTPUT - 40 BITS => 5 BYTES
-    for (uint8_t i = 40; i != 0; i--)
-    {
-        loopCnt = DHTLIB_TIMEOUT;
-        while(digitalRead(pin) == LOW)
-        {
-            if (--loopCnt == 0) return DHTLIB_ERROR_TIMEOUT;
-        }
-
-        uint32_t t = micros();
-
-        loopCnt = DHTLIB_TIMEOUT;
-        while(digitalRead(pin) == HIGH)
-        {
-            if (--loopCnt == 0) return DHTLIB_ERROR_TIMEOUT;
-        }
-
-        if ((micros() - t) > 40)
-        { 
-            bits[idx] |= mask;
-        }
-        mask >>= 1;
-        if (mask == 0)   // next byte?
-        {
-            mask = 128;
-            idx++;
-        }
-    }
-    pinMode(pin, OUTPUT);
-    digitalWrite(pin, HIGH);
-
-    return DHTLIB_OK;
-}
-//
-// END OF FILE
-//
