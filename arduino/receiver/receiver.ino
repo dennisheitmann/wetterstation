@@ -1,14 +1,10 @@
 #include "VirtualWire.h"
-#include <LiquidCrystal.h>
 #include <SPI.h>
 #include <Ethernet.h>
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xDD };
 IPAddress ip(192,168,0,97);
 EthernetServer server(23);
-
-// initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
 // Virtual Wire PIN
 const int receive_pin = 8;
@@ -41,16 +37,9 @@ void setup()
   // Start the receiver PLL running
   vw_rx_start();
 
-  lcd.begin(5, 2);
-  lcd.print("setup");
-  lcd.setCursor(0, 1);
-  lcd.print("setup");
-  delay(500);
-  lcd.clear();
-
-  delay(50);
+  delay(250);
   Ethernet.begin(mac, ip);
-  delay(50);
+  delay(250);
   server.begin();
 }
 
@@ -82,31 +71,23 @@ void loop()
       {
         message[j] = (char)buf[i];
       }
-      if (i < 6)  
-      {
-        lcd.setCursor(i, 0);
-      } 
-      else {
-        lcd.setCursor((i - 5), 1);
-      }
-      lcd.print((char)buf[i]);
     }
     if (message[0] == 't')
     {
       if (message[1] == '1')
       {
         strcpy(t1, message);
-        Serial.println(t1);
+        // Serial.println(t1);
       }
       if (message[1] == '2')
       {
         strcpy(t2, message);
-        Serial.println(t2);
+        // Serial.println(t2);
       }
       if (message[1] == '3')
       {
         strcpy(t3, message);
-        Serial.println(t3);
+        // Serial.println(t3);
       }
     }
     if (message[0] == 'm')
@@ -114,29 +95,34 @@ void loop()
       if (message[1] == 'V')
       {
         strcpy(mV, message);
-        Serial.println(mV);
+        // Serial.println(mV);
       }
       if (message[1] == 'b')
       {
         strcpy(mb, message);
-        Serial.println(mb);
+        // Serial.println(mb);
       }
     }
     if (message[0] == 'h')
     {
       strcpy(hu, message);
-      Serial.println(hu);
+      // Serial.println(hu);
     }
     if (message[0] == 'B')
     {
       strcpy(bV, message);
-      Serial.println(bV);
+      // Serial.println(bV);
     }
     if (message[0] == 'S')
     {
       strcpy(sV, message);
-      Serial.println(sV);
+      // Serial.println(sV);
     }
+    
+    // Daten senden
+    Serial.println(message);
+    // pushMessage();
+    
     // Zeitpunkt für den Timer setzen
     previousMillis = millis();
   }
@@ -189,5 +175,31 @@ void muninEthernet() {
     }
   }
   client.stop();
+}
+
+void pushMessage() {
+  String s_t1 = t1;
+  String s_t2 = t2;
+  String s_t3 = t3;
+  String s_mb = mb;
+  String s_hu = hu;
+  String s_mV = mV;
+  String s_bV = bV;
+  String s_sV = sV;
+  EthernetClient client;
+  if (client.connect("192.168.0.2", 80)) {
+    Serial.println();
+    Serial.println("GET /wetterinput/input.php?"+s_t1+"-"+s_t2+"-"+s_t3+"-"+s_mb+"-"+s_hu+"-"+s_mV+"-"+s_bV+"-"+s_sV+" HTTP/1.0");
+    client.println(F("HOST: wetterstation.nxxt.de"));
+    client.println(F("Connection: close"));
+    client.println();
+ 
+    client.stop();
+ 
+    Serial.println(F("Daten geschickt."));
+  }
+  else {
+    Serial.println(F("Verbindung fehlgeschlagen"));
+  }
 }
 
