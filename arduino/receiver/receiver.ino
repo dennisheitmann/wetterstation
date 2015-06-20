@@ -187,4 +187,3 @@ void pushMessage() {
     //Serial.println(F("Verbindung fehlgeschlagen"));
   }
 }
-
