@@ -11,24 +11,25 @@ const int receive_pin = 8;
 
 const char valueTxt[ ] = ".value";
 
-char t1[VW_MAX_MESSAGE_LEN] = "";
-char t2[VW_MAX_MESSAGE_LEN] = "";
-char t3[VW_MAX_MESSAGE_LEN] = "";
-char mb[VW_MAX_MESSAGE_LEN] = "";
-char hu[VW_MAX_MESSAGE_LEN] = "";
-char mV[VW_MAX_MESSAGE_LEN] = "";
-char sV[VW_MAX_MESSAGE_LEN] = "";
-char bV[VW_MAX_MESSAGE_LEN] = "";
-char message[VW_MAX_MESSAGE_LEN] = "";
+char t1[VW_MAX_PAYLOAD] = "";
+char t2[VW_MAX_PAYLOAD] = "";
+char t3[VW_MAX_PAYLOAD] = "";
+char mb[VW_MAX_PAYLOAD] = "";
+char hu[VW_MAX_PAYLOAD] = "";
+char mV[VW_MAX_PAYLOAD] = "";
+char sV[VW_MAX_PAYLOAD] = "";
+char bV[VW_MAX_PAYLOAD] = "";
+char message[VW_MAX_PAYLOAD] = "";
 
-unsigned long currentMillis = 0;
 unsigned long previousMillis = 0;
-unsigned long interval = 180000; 
+unsigned long millisInterval = 180000; 
+unsigned long previousPush = 0;
+unsigned long pushInterval = 30000; 
 
 void setup()
 {
   delay(1000);
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   // Initialise the IO and ISR
   vw_set_rx_pin(receive_pin);
@@ -77,71 +78,66 @@ void loop()
       if (message[1] == '1')
       {
         strcpy(t1, message);
-        // Serial.println(t1);
       }
-      if (message[1] == '2')
+      else if (message[1] == '2')
       {
         strcpy(t2, message);
-        // Serial.println(t2);
       }
-      if (message[1] == '3')
+      else if (message[1] == '3')
       {
         strcpy(t3, message);
-        // Serial.println(t3);
       }
     }
-    if (message[0] == 'm')
+    else if (message[0] == 'm')
     {
       if (message[1] == 'V')
       {
         strcpy(mV, message);
-        // Serial.println(mV);
       }
-      if (message[1] == 'b')
+      else if (message[1] == 'b')
       {
         strcpy(mb, message);
-        // Serial.println(mb);
       }
     }
-    if (message[0] == 'h')
+    else if (message[0] == 'h')
     {
       strcpy(hu, message);
-      // Serial.println(hu);
     }
-    if (message[0] == 'B')
+    else if (message[0] == 'B')
     {
       strcpy(bV, message);
-      // Serial.println(bV);
     }
-    if (message[0] == 'S')
+    else if (message[0] == 'S')
     {
       strcpy(sV, message);
-      // Serial.println(sV);
     }
     
-    // Daten senden
-    Serial.println(message);
-    // pushMessage();
+    // Daten seriel ausgeben
+    //Serial.println(message);
     
     // Zeitpunkt für den Timer setzen
     previousMillis = millis();
   }
   // Länger als interval Millisec. kein Signal, dann die Variablen (Messages) leeren
-  if((millis() - previousMillis) > interval)
+  if((millis() - previousMillis) > millisInterval)
   {
-    // message löschen
-    memset(message, '\0', sizeof(message));
-    strcpy(t1, message);
-    strcpy(t2, message);
-    strcpy(t3, message);
-    strcpy(mb, message);
-    strcpy(hu, message);
-    strcpy(mV, message);
-    strcpy(bV, message);
-    strcpy(sV, message);
+    memset(t1, '\0', sizeof(t1));
+    memset(t2, '\0', sizeof(t2));
+    memset(t3, '\0', sizeof(t3));
+    memset(mb, '\0', sizeof(mb));
+    memset(hu, '\0', sizeof(hu));
+    memset(mV, '\0', sizeof(mV));
+    memset(bV, '\0', sizeof(bV));
+    memset(sV, '\0', sizeof(sV));
   }
   // Ausgabe im Munin-Format erzeugen
   muninEthernet();
+
+  if((millis() - previousPush) > pushInterval)
+  {
+    pushMessage();
+    previousPush = millis();
+  }
 }
 
 void muninEthernet() {
@@ -149,28 +145,28 @@ void muninEthernet() {
   if (client) {
     while (client.connected()) {
       client.print(t1);
-      client.print(";");
+      client.print(F(";"));
       client.print(t2);
-      client.print(";");
+      client.print(F(";"));
       client.print(t3);
-      client.print(";");
+      client.print(F(";"));
       client.print(mb);
-      client.print(";");
+      client.print(F(";"));
       client.print(hu);
-      client.print(";");
+      client.print(F(";"));
       client.print(mV);
-      client.print(";");
+      client.print(F(";"));
       client.print(bV);
-      client.print(";");
+      client.print(F(";"));
       client.print(sV);
-      client.print(";");
-      client.print("Last Message: ");
+      client.print(F(";"));
+      client.print(F("Last Message: "));
       client.print(message);
-      client.print(" @ ");
+      client.print(F(" @ "));
       client.print(previousMillis);
-      client.print(";");
+      client.print(F(";"));
       client.println();
-      delay(1);
+      delay(5);
       break;
     }
   }
@@ -178,28 +174,17 @@ void muninEthernet() {
 }
 
 void pushMessage() {
-  String s_t1 = t1;
-  String s_t2 = t2;
-  String s_t3 = t3;
-  String s_mb = mb;
-  String s_hu = hu;
-  String s_mV = mV;
-  String s_bV = bV;
-  String s_sV = sV;
   EthernetClient client;
   if (client.connect("192.168.0.2", 80)) {
-    Serial.println();
-    Serial.println("GET /wetterinput/input.php?"+s_t1+"-"+s_t2+"-"+s_t3+"-"+s_mb+"-"+s_hu+"-"+s_mV+"-"+s_bV+"-"+s_sV+" HTTP/1.0");
-    client.println(F("HOST: wetterstation.nxxt.de"));
+    client.println("GET /wetterinput/input.php?data="+(String)t1+","+(String)t2+","+(String)t3+","+(String)mb+","+(String)hu+","+(String)mV+","+(String)bV+","+(String)sV+" HTTP/1.1");
+    client.println(F("HOST: wetter.nxxt.de"));
     client.println(F("Connection: close"));
     client.println();
- 
     client.stop();
- 
-    Serial.println(F("Daten geschickt."));
+    delay(5);
   }
   else {
-    Serial.println(F("Verbindung fehlgeschlagen"));
+    //Serial.println(F("Verbindung fehlgeschlagen"));
   }
 }
 
