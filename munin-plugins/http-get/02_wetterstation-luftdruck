@@ -1,0 +1,18 @@
+#!/bin/bash
+if [ "$1" = "autoconf" ]; then
+        echo yes
+        exit 0
+fi
+
+if [ "$1" = "config" ]; then
+        echo 'graph_title Luftdruck'
+        echo 'graph_args --alt-y-grid --rigid --lower-limit 960 --upper-limit 1040 --base 1000 --units-exponent 1'
+        echo 'graph_scale no'
+        echo 'graph_vlabel Luftdruck in mbar'
+        echo 'graph_category wetterstation'
+        echo 'graph_info Dieses Diagramm zeigt den Luftdruck bezogen auf Nullniveau (0m) an.'
+        echo 'mbar.label p[mbar]'
+        exit 0
+fi
+
+cat /tmp/wetterstation-luftdruck-value

@@ -1,0 +1,19 @@
+#!/bin/bash
+if [ "$1" = "autoconf" ]; then
+        echo yes
+        exit 0
+fi
+
+if [ "$1" = "config" ]; then
+        echo 'graph_title Temperatur'
+        echo 'graph_args --alt-y-grid --lower-limit -5 --upper-limit 25 --base 1000'
+        echo 'graph_scale no'
+        echo 'graph_vlabel Temperatur in Grad Celsius'
+        echo 'graph_category wetterstation'
+        echo 'graph_info Dieses Diagramm zeigt die Temperatur in Grad Celsius an (niedrigster Wert).'
+        echo 't0_C.label t[C]'
+        echo 't0_C.line 0:ff0000'
+        exit 0
+fi
+
+cat /tmp/wetterstation-temperatur_min-value

@@ -1,0 +1,18 @@
+#!/bin/bash
+if [ "$1" = "autoconf" ]; then
+        echo yes
+        exit 0
+fi
+
+if [ "$1" = "config" ]; then
+        echo 'graph_title Versorgungsspannung'
+        echo 'graph_args --alt-y-grid --rigid --lower-limit 2200 --upper-limit 5200'
+        echo 'graph_scale no'
+        echo 'graph_vlabel Spannung in mV'
+        echo 'graph_category wetterstation'
+        echo 'graph_info Dieses Diagramm zeigt die Versorgungsspannung der Wetterstation in mV.'
+        echo 'mVcc.label mV'
+        exit 0
+fi
+
+cat /tmp/wetterstation-spannung-value

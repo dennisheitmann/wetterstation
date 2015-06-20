@@ -1,0 +1,18 @@
+#!/bin/bash
+if [ "$1" = "autoconf" ]; then
+        echo yes
+        exit 0
+fi
+
+if [ "$1" = "config" ]; then
+        echo 'graph_title Luftfeuchte'
+        echo 'graph_args --alt-y-grid --rigid --lower-limit 0 --upper-limit 100'
+        echo 'graph_scale no'
+        echo 'graph_vlabel Luftfeuchte in Prozent'
+        echo 'graph_category wetterstation'
+        echo 'graph_info Dieses Diagramm zeigt die Luftfeuchte in Prozent an (DHT11 Sensor).'
+        echo 'hum%.label h[%]'
+        exit 0
+fi
+
+cat /tmp/wetterstation-luftfeuchte-value

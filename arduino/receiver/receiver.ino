@@ -73,6 +73,11 @@ void loop()
         message[j] = (char)buf[i];
       }
     }
+    String s_message = message;
+    s_message.replace("  ", " ");
+    s_message.replace("  ", " ");
+    s_message.replace("  ", " ");
+    s_message.toCharArray(message, VW_MAX_PAYLOAD);
     if (message[0] == 't')
     {
       if (message[1] == '1')
@@ -174,9 +179,25 @@ void muninEthernet() {
 }
 
 void pushMessage() {
+  String s_t1 = t1;
+  s_t1.replace(" ", "=");
+  String s_t2 = t2;
+  s_t2.replace(" ", "=");
+  String s_t3 = t3;
+  s_t3.replace(" ", "=");
+  String s_mb = mb;
+  s_mb.replace(" ", "=");
+  String s_hu = hu;
+  s_hu.replace(" ", "=");
+  String s_mV = mV;
+  s_mV.replace(" ", "=");
+  String s_bV = bV;
+  s_bV.replace(" ", "=");
+  String s_sV = sV;
+  s_sV.replace(" ", "=");
   EthernetClient client;
   if (client.connect("192.168.0.2", 80)) {
-    client.println("GET /wetterinput/input.php?data="+(String)t1+","+(String)t2+","+(String)t3+","+(String)mb+","+(String)hu+","+(String)mV+","+(String)bV+","+(String)sV+" HTTP/1.1");
+    client.println("GET /wetterinput/input.php?data="+s_t1+","+s_t2+","+s_t3+","+s_mb+","+s_hu+","+s_mV+","+s_bV+","+s_sV+" HTTP/1.1");
     client.println(F("HOST: wetter.nxxt.de"));
     client.println(F("Connection: close"));
     client.println();
