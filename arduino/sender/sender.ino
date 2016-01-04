@@ -29,11 +29,17 @@ char msg_num[8];
 char msg[8];
 char msgStr[8];
 
-// D11
-const int relaisPin = 11;
+// D11 und D10
+// Solarzelle laden
+const int relaisPin11 = 11;
+// Luefter
+const int relaisPin10 = 10;
 // A0 und A2
 const int batPin = 0;
 const int solPin = 2;
+
+float solvcc = 0;
+float batvcc = 0;
 
 void setup()
 {
@@ -44,18 +50,39 @@ void setup()
   vw_set_ptt_inverted(true); // Required for DR3100
   vw_setup(1200);  // Bits per sec
 
-  pressure.begin();  
+  pressure.begin();
   sensors.begin();
   dht.begin();
 
   // Relais-Output-Pin setzen
-  pinMode(relaisPin, OUTPUT);
+  pinMode(relaisPin11, OUTPUT);
+  pinMode(relaisPin10, OUTPUT);
   randomSeed(analogRead(3));
+
+  delay(100);
 }
 
-void loop()
-{
-  delay(100);
+void loop() {
+  messenSenden();
+  for (int i = 0; i < 8; i++) {
+    lpDelay();
+    checkAkku();
+  }
+}
+
+void messenSenden() {
+  // Akku vom Solarpanel trennen
+  digitalWrite(relaisPin11, HIGH);
+  delay(50);
+  // Solarspannung messen und Luefter anschalten bei ueber 20 V (Sonnenschein)
+  solvcc = analogRead(solPin) * 0.0276;
+  // Akku wieder anschliessen
+  digitalWrite(relaisPin11, LOW);
+  if (solvcc > 20) {
+    digitalWrite(relaisPin10, HIGH);
+    // Serial.println("Sonne!");
+    LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
+  }
 
   // Sensoren einlesen
   temp_bmp = pressure.readTemperature();
@@ -66,28 +93,25 @@ void loop()
   temp_1wi = sensors.getTempCByIndex(0);
   temp_dht = dht.readTemperature();
   humi_dht = dht.readHumidity();
- 
-  // Leerlaufspannung der Solarzelle mit nicht angeschlossenem Akku messen
-  digitalWrite(relaisPin, HIGH);
-  delay(250);
-  float solvcc = analogRead(solPin)*0.0276;
+
+  // Luefter aus
+  digitalWrite(relaisPin10, LOW);
 
   // Messung Batteriespannung mit angeschlossener Solarzelle starten
-  digitalWrite(relaisPin, LOW);
-  delay(250);
-  float batvcc = analogRead(batPin)*0.0276;
-  
+  digitalWrite(relaisPin11, LOW);
+  delay(50);
+  batvcc = analogRead(batPin) * 0.0276;
+
   // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
-  if (batvcc > 14.0) {
-    digitalWrite(relaisPin, HIGH);
+  if (batvcc > 14.2) {
+    digitalWrite(relaisPin11, HIGH);
     // Serial.println("Voll");
   } else {
-    digitalWrite(relaisPin, LOW);
+    digitalWrite(relaisPin11, LOW);
     // Serial.println("Laden");
   }
-  
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
-  delay(100);
+
+  LowPower.powerDown(SLEEP_120MS, ADC_OFF, BOD_ON);
 
   // Solarzellenleerlaufspannung senden
   memset(msgStr, '\0', sizeof(msgStr));
@@ -99,16 +123,8 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
-  delay(100);
+  LowPower.powerDown(SLEEP_120MS, ADC_OFF, BOD_ON);
 
-  // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
-  batvcc = analogRead(batPin)*0.0276;
-  if (batvcc > 14.0) {
-    digitalWrite(relaisPin, HIGH);
-    // Serial.println("Voll");
-  }
-  
   // Batteriespannung mit angeschlossener Solarzelle senden
   memset(msgStr, '\0', sizeof(msgStr));
   memset(msg, '\0', sizeof(msg));
@@ -119,15 +135,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
-  delay(100);
-
-  // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
-  batvcc = analogRead(batPin)*0.0276;
-  if (batvcc > 14.0) {
-    digitalWrite(relaisPin, HIGH);
-    // Serial.println("Voll");
-  }
+  LowPower.powerDown(SLEEP_120MS, ADC_OFF, BOD_ON);
 
   // Versorgungsspannung senden
   memset(msgStr, '\0', sizeof(msgStr));
@@ -139,15 +147,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
-  delay(100);
-
-  // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
-  batvcc = analogRead(batPin)*0.0276;
-  if (batvcc > 14.0) {
-    digitalWrite(relaisPin, HIGH);
-    // Serial.println("Voll");
-  }
+  LowPower.powerDown(SLEEP_120MS, ADC_OFF, BOD_ON);
 
   // BMP Temperatur senden
   memset(msgStr, '\0', sizeof(msgStr));
@@ -159,15 +159,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
-  delay(100);
-
-  // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
-  batvcc = analogRead(batPin)*0.0276;
-  if (batvcc > 14.0) {
-    digitalWrite(relaisPin, HIGH);
-    // Serial.println("Voll");
-  }
+  LowPower.powerDown(SLEEP_120MS, ADC_OFF, BOD_ON);
 
   // BMP Druck senden
   memset(msgStr, '\0', sizeof(msgStr));
@@ -179,15 +171,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
-  delay(100);
-
-  // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
-  batvcc = analogRead(batPin)*0.0276;
-  if (batvcc > 14.0) {
-    digitalWrite(relaisPin, HIGH);
-    // Serial.println("Voll");
-  }
+  LowPower.powerDown(SLEEP_120MS, ADC_OFF, BOD_ON);
 
   // DHT Feuchtigkeitswert senden
   memset(msgStr, '\0', sizeof(msgStr));
@@ -199,15 +183,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
-  delay(100);
-
-  // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
-  batvcc = analogRead(batPin)*0.0276;
-  if (batvcc > 14.0) {
-    digitalWrite(relaisPin, HIGH);
-    // Serial.println("Voll");
-  }
+  LowPower.powerDown(SLEEP_120MS, ADC_OFF, BOD_ON);
 
   // DHT Temperatur senden
   memset(msgStr, '\0', sizeof(msgStr));
@@ -219,15 +195,7 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
-  delay(100);
-
-  // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
-  batvcc = analogRead(batPin)*0.0276;
-  if (batvcc > 14.0) {
-    digitalWrite(relaisPin, HIGH);
-    // Serial.println("Voll");
-  }
+  LowPower.powerDown(SLEEP_120MS, ADC_OFF, BOD_ON);
 
   // OneWire Temperatur senden
   memset(msgStr, '\0', sizeof(msgStr));
@@ -239,12 +207,26 @@ void loop()
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
 
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
   // Sendeintervall leicht versetzen, um gleichzeitige Kanalbelegung zu verhindern
   delay(random(100, 1900));
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
-  delay(100);
+}
 
+void lpDelay() {
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+}
+
+void checkAkku() {
+  // Check, ob der Akku voll geladen ist (Ladeschlussspannung bei angeschlossenem Panel)
+  digitalWrite(relaisPin11, LOW);
+  delay(50);
+  batvcc = analogRead(batPin) * 0.0276;
+  if (batvcc > 14.2) {
+    digitalWrite(relaisPin11, HIGH);
+    // Serial.println("Der Akku ist voll!");
+  } else {
+    digitalWrite(relaisPin11, LOW);
+    // Serial.println("Laden...");
+  }
 }
 
 // Versorgungspannung messen mit interner Referenz
@@ -254,9 +236,9 @@ long readVcc() {
   ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
   delay(2); // Wait for Vref to settle
   ADCSRA |= _BV(ADSC); // Convert
-  while (bit_is_set(ADCSRA,ADSC));
+  while (bit_is_set(ADCSRA, ADSC));
   result = ADCL;
-  result |= ADCH<<8;
+  result |= ADCH << 8;
   result = 1126400L / result; // Back-calculate AVcc in mV
   return result;
 }
