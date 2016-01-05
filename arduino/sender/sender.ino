@@ -12,7 +12,7 @@ Adafruit_BMP085 pressure;
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
-#define DHTPIN 2
+#define DHTPIN 9
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -31,9 +31,9 @@ char msgStr[8];
 
 // D11 und D10
 // Solarzelle laden
-const int relaisPin11 = 11;
+const int relaisPin8 = 8;
 // Luefter
-const int relaisPin10 = 10;
+const int relaisPin7 = 7;
 // A0 und A2
 const int batPin = 0;
 const int solPin = 2;
@@ -55,8 +55,8 @@ void setup()
   dht.begin();
 
   // Relais-Output-Pin setzen
-  pinMode(relaisPin11, OUTPUT);
-  pinMode(relaisPin10, OUTPUT);
+  pinMode(relaisPin8, OUTPUT);
+  pinMode(relaisPin7, OUTPUT);
   randomSeed(analogRead(3));
 
   delay(100);
@@ -72,14 +72,14 @@ void loop() {
 
 void messenSenden() {
   // Akku vom Solarpanel trennen
-  digitalWrite(relaisPin11, HIGH);
+  digitalWrite(relaisPin8, HIGH);
   delay(50);
   // Solarspannung messen und Luefter anschalten bei ueber 20 V (Sonnenschein)
   solvcc = analogRead(solPin) * 0.0276;
   // Akku wieder anschliessen
-  digitalWrite(relaisPin11, LOW);
+  digitalWrite(relaisPin8, LOW);
   if (solvcc > 20) {
-    digitalWrite(relaisPin10, HIGH);
+    digitalWrite(relaisPin7, HIGH);
     // Serial.println("Sonne!");
     LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_ON);
   }
@@ -95,19 +95,19 @@ void messenSenden() {
   humi_dht = dht.readHumidity();
 
   // Luefter aus
-  digitalWrite(relaisPin10, LOW);
+  digitalWrite(relaisPin7, LOW);
 
   // Messung Batteriespannung mit angeschlossener Solarzelle starten
-  digitalWrite(relaisPin11, LOW);
+  digitalWrite(relaisPin8, LOW);
   delay(50);
   batvcc = analogRead(batPin) * 0.0276;
 
   // Check, ob der Akku voll geladen ist (Ladeschlussspannung)
   if (batvcc > 14.2) {
-    digitalWrite(relaisPin11, HIGH);
+    digitalWrite(relaisPin8, HIGH);
     // Serial.println("Voll");
   } else {
-    digitalWrite(relaisPin11, LOW);
+    digitalWrite(relaisPin8, LOW);
     // Serial.println("Laden");
   }
 
@@ -217,14 +217,14 @@ void lpDelay() {
 
 void checkAkku() {
   // Check, ob der Akku voll geladen ist (Ladeschlussspannung bei angeschlossenem Panel)
-  digitalWrite(relaisPin11, LOW);
+  digitalWrite(relaisPin8, LOW);
   delay(50);
   batvcc = analogRead(batPin) * 0.0276;
   if (batvcc > 14.2) {
-    digitalWrite(relaisPin11, HIGH);
+    digitalWrite(relaisPin8, HIGH);
     // Serial.println("Der Akku ist voll!");
   } else {
-    digitalWrite(relaisPin11, LOW);
+    digitalWrite(relaisPin8, LOW);
     // Serial.println("Laden...");
   }
 }
